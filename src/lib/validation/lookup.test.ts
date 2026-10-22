@@ -27,6 +27,17 @@ describe("lookupDomainSchema", () => {
 });
 
 describe("createLookupOptionSchema", () => {
+  it("accepts HR and finance master-data domains added in migration 0054", () => {
+    for (const domain of ["department", "position", "budget_category"] as const) {
+      const parsed = createLookupOptionSchema.safeParse({
+        domain,
+        code: "ENG01",
+        label: "Engineer",
+      });
+      expect(parsed.success).toBe(true);
+    }
+  });
+
   it("accepts a minimal valid payload", () => {
     const parsed = createLookupOptionSchema.safeParse({
       domain: "unit_pengaju",

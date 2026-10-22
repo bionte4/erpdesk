@@ -13,7 +13,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireCurrentEmployee } from "@/lib/auth/session";
-import { loadAllLookupOptionsForAdmin } from "@/lib/data/lookups";
+import {
+  LOOKUP_DOMAINS,
+  loadAllLookupOptionsForAdmin,
+} from "@/lib/data/lookups";
 import type { EmployeeRole } from "@/lib/rbac/roles";
 
 import { LookupManager } from "./lookup-manager";
@@ -47,24 +50,11 @@ export default async function LookupsPage() {
     getTranslations("settings.lookups"),
   ]);
 
-  // Sum across ALL 7 domains — Field Ops CA (unit_pengaju, transport_need,
-  // area, rab_category) + HR/Finance master data (department, position,
-  // budget_category). Previously only counted the Field Ops 4, which
-  // under-reported the header badge once the HR/Finance domains got tabs.
-  const allDomains = [
-    "unit_pengaju",
-    "transport_need",
-    "area",
-    "rab_category",
-    "department",
-    "position",
-    "budget_category",
-  ] as const;
-  const totalOptions = allDomains.reduce(
+  const totalOptions = LOOKUP_DOMAINS.reduce(
     (n, d) => n + buckets[d].length,
     0,
   );
-  const activeOptions = allDomains.reduce(
+  const activeOptions = LOOKUP_DOMAINS.reduce(
     (n, d) => n + buckets[d].filter((r) => r.is_active).length,
     0,
   );

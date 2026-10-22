@@ -3,31 +3,31 @@ import "server-only";
 import { cache } from "react";
 
 import { createClient } from "@/lib/supabase/server";
+import { LOOKUP_DOMAIN_VALUES } from "@/lib/validation/lookup";
 
 /**
- * Admin-managed reference-data domains. MUST stay in sync with the CHECK
- * constraint on `public.lookup_options.domain` (migrations 0049 + 0054).
+ * Admin-managed reference-data domains. Re-exported from the Zod roster
+ * (`LOOKUP_DOMAIN_VALUES`) so create/update validation and these loaders
+ * share one list. That list mirrors the CHECK constraint on
+ * `public.lookup_options.domain` (migrations 0049 + 0054):
  *
- * Domain roster:
  *   - Field Ops CA form (migration 0049):
  *       unit_pengaju, transport_need, area, rab_category
  *   - HR + Finance master data (migration 0054):
  *       department, position, budget_category
  */
-export const LOOKUP_DOMAINS = [
-  "unit_pengaju",
-  "transport_need",
-  "area",
-  "rab_category",
-  "department",
-  "position",
-  "budget_category",
-] as const;
+export const LOOKUP_DOMAINS = LOOKUP_DOMAIN_VALUES;
 
 export type LookupDomain = (typeof LOOKUP_DOMAINS)[number];
 
 export function isLookupDomain(v: string): v is LookupDomain {
   return (LOOKUP_DOMAINS as readonly string[]).includes(v);
+}
+
+function emptyDomainBuckets<T>(): Record<LookupDomain, T[]> {
+  return Object.fromEntries(
+    LOOKUP_DOMAINS.map((domain) => [domain, [] as T[]]),
+  ) as Record<LookupDomain, T[]>;
 }
 
 export type LookupOption = {
@@ -87,15 +87,7 @@ export const loadFieldOpsFormLookups = cache(async () => {
     .order("sort_order", { ascending: true })
     .order("label", { ascending: true });
 
-  const buckets: Record<LookupDomain, LookupOption[]> = {
-    unit_pengaju: [],
-    transport_need: [],
-    area: [],
-    rab_category: [],
-    department: [],
-    position: [],
-    budget_category: [],
-  };
+  const buckets = emptyDomainBuckets<LookupOption>();
   if (error || !data) return buckets;
 
   for (const row of data) {
@@ -130,15 +122,7 @@ export const loadAllLookupOptionsForAdmin = cache(async (): Promise<
     .order("sort_order", { ascending: true })
     .order("label", { ascending: true });
 
-  const buckets: Record<LookupDomain, AdminLookupOption[]> = {
-    unit_pengaju: [],
-    transport_need: [],
-    area: [],
-    rab_category: [],
-    department: [],
-    position: [],
-    budget_category: [],
-  };
+  const buckets = emptyDomainBuckets<AdminLookupOption>();
   if (error || !data) return buckets;
 
   for (const row of data) {

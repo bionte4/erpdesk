@@ -3,7 +3,11 @@
  *
  * Backs the server actions in
  * `src/app/(app)/settings/lookups/actions.ts`. Mirrors the DB CHECK
- * constraint in migration 0049.
+ * constraint on `lookup_options.domain` (migration 0049, extended by 0054).
+ *
+ * `LOOKUP_DOMAIN_VALUES` is the single roster. `LOOKUP_DOMAINS` in
+ * `src/lib/data/lookups.ts` re-exports it so the admin UI, loaders, and
+ * this schema cannot drift apart.
  */
 
 import { z } from "zod";
@@ -11,9 +15,9 @@ import { z } from "zod";
 import { uuidSchema } from "./common";
 
 // ---------------------------------------------------------------------------
-// Domain enum — MUST stay in sync with:
-//   - migration 0049 CHECK constraint on `lookup_options.domain`
-//   - `LOOKUP_DOMAINS` in `src/lib/data/lookups.ts`
+// Domain enum — MUST stay in sync with the CHECK constraint:
+//   - migration 0049: unit_pengaju, transport_need, area, rab_category
+//   - migration 0054: department, position, budget_category
 // ---------------------------------------------------------------------------
 
 export const LOOKUP_DOMAIN_VALUES = [
@@ -21,6 +25,9 @@ export const LOOKUP_DOMAIN_VALUES = [
   "transport_need",
   "area",
   "rab_category",
+  "department",
+  "position",
+  "budget_category",
 ] as const;
 
 export const lookupDomainSchema = z.enum(LOOKUP_DOMAIN_VALUES);
